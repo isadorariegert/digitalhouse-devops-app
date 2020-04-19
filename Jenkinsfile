@@ -18,10 +18,6 @@ pipeline {
                 script {
                       try {
                             docker.build("digitalhouse-app:${env.BUILD_ID}")
-                            customImage.inside {
-                                        sh 'node -v'
-                                        sh 'npm test'
-                            }
                         }
                       catch(e){
                         echo "Caught: ${e}"
