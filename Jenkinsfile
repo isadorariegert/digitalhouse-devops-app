@@ -29,9 +29,11 @@ pipeline {
         }
 
         stage('Test image') {
-            script {
-                app.inside {
-                    sh 'echo "Tests passed"'
+            steps {
+                script {
+                    app.inside {
+                        sh 'echo "Tests passed"'
+                    }
                 }
             }
         }
