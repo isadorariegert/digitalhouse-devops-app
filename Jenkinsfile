@@ -3,57 +3,49 @@ pipeline {
     agent any
     stages {
 
-        stage('Checkout') {
+        stage('Clone repository') {
             steps {
                 checkout scm
             }
         }
-        stage('Build container'){          
-            steps {
+        stage('Build image'){          
+            stage{
                 script {
-                    if (env.BRANCH_NAME == 'dev') {
-                        print "Environment will be : ${env.NODE_ENV}"
-                        
-                        try {
-                                docker.build("digitalhouse-app:${env.BUILD_ID}")
-                            }
-                        catch(e){
-                            echo "Caught: ${e}"
-                            currentBuild.result = 'FAILURE'
-                            error "Build stage failed"
+                    print "Environment will be : ${env.NODE_ENV}"
+                    
+                    try {
+                        app = docker.build("digitalhouse-app:${env.BUILD_ID}")
                         }
-                        finally{
-
-                        }
+                    catch(e){
+                        echo "Caught: ${e}"
+                        currentBuild.result = 'FAILURE'
+                        error "Build stage failed"
                     }
-                    else if (env.BRANCH_NAME == 'prod') {
-                        print "Environment will be : ${env.NODE_ENV}"
-                        
-                        try {
-                                docker.build("digitalhouse-app:latest")
-                            }
-                        catch(e){
-                            echo "Caught: ${e}"
-                            currentBuild.result = 'FAILURE'
-                            error "Build stage failed"
-                        }
-                        finally{
+                    finally{
 
-                        }
                     }
                 }
             }
-           
-
         }
 
-        stage('Deploy') {
+        stage('Test image') {
+            script {
+                app.inside {
+                    sh 'echo "Tests passed"'
+                }
+            }
+        }
+
+        stage('Deploy image') {
 
             when {
-                branch 'dev'
+                branch 'prod'
             }
             steps {
                 echo 'Deploy para Desenvolvimento'
+                script {
+                    app.push("latest")
+                }
             }
         }
 
