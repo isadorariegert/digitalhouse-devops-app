@@ -31,9 +31,10 @@ pipeline {
         stage('Test image') {
             steps {
                 script {
-                    app.inside {
-                        sh 'echo "Tests passed"'
+                    app.withRun('-p 8030:3000') { c ->
+                        sh "curl -i http://${hostIp(c)}:8030/"
                     }
+               
                 }
             }
         }
