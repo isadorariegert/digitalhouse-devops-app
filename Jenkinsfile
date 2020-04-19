@@ -9,7 +9,7 @@ pipeline {
             }
         }
         stage('Build image'){          
-            step {
+            steps {
                 script {
                     print "Environment will be : ${env.NODE_ENV}"
                     
