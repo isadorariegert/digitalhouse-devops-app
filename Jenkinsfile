@@ -1,10 +1,5 @@
 pipeline {
 
-    parameters {
-      string(name: 'LOCAL_TEST', defaultValue: 'false')
-      string(name: 'DEPLOY_MODE', defaultValue: 'dev')
-    }
-
     agent any
     stages {
 
@@ -21,6 +16,21 @@ pipeline {
                         
                         try {
                                 docker.build("digitalhouse-app:${env.BUILD_ID}")
+                            }
+                        catch(e){
+                            echo "Caught: ${e}"
+                            currentBuild.result = 'FAILURE'
+                            error "Build stage failed"
+                        }
+                        finally{
+
+                        }
+                    }
+                    else if (env.BRANCH_NAME == 'prod') {
+                        print "Environment will be : ${env.NODE_ENV}"
+                        
+                        try {
+                                docker.build("digitalhouse-app:latest")
                             }
                         catch(e){
                             echo "Caught: ${e}"
