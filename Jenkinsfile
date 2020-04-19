@@ -1,5 +1,10 @@
 pipeline {
 
+    parameters {
+      string(name: 'LOCAL_TEST', defaultValue: 'false')
+      string(name: 'DEPLOY_MODE', defaultValue: 'dev')
+    }
+
     agent any
     stages {
 
