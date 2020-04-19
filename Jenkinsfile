@@ -10,9 +10,10 @@ pipeline {
         }
         stage('Build container'){          
             steps {
-                if (env.BRANCH_NAME == 'dev') {
-                    print "Environment will be : ${env.NODE_ENV}"
-                    script {
+                script {
+                    if (env.BRANCH_NAME == 'dev') {
+                        print "Environment will be : ${env.NODE_ENV}"
+                        
                         try {
                                 docker.build("digitalhouse-app:${env.BUILD_ID}")
                             }
