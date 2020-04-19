@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     app.withRun('-p 8030:3000') { c ->
-                        sh "curl -i http://${hostIp(c)}:8030/"
+                        sh "curl -i http://127.0.0.1:8030/"
                     }
                
                 }
