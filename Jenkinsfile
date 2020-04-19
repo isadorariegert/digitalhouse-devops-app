@@ -16,10 +16,11 @@ pipeline {
 
                 print "Environment will be : ${env.NODE_ENV}"
 
-                sh 'node -v'
-                sh 'npm prune'
-                sh 'npm install'
-                sh 'npm test'
+                def customImage = docker.build("digitalhouse-app:${env.BUILD_ID}")
+                customImage.inside {
+                            sh 'node -v'
+                            sh 'npm test'
+                }
             }
         }
 
