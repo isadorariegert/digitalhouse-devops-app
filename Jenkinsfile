@@ -16,7 +16,6 @@ pipeline {
 
                 print "Environment will be : ${env.NODE_ENV}"
 
-                docker.build("digitalhouse-app:${env.BUILD_ID}")
               
             }
         }
