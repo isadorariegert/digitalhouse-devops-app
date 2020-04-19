@@ -8,7 +8,7 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Test'){
+        stage('Build container'){
             when {
                 branch 'dev'
             }            
@@ -29,29 +29,44 @@ pipeline {
                       }
                 }
             }
+            when {
+                branch 'prod'
+            }            
+            steps {
+
+                print "Environment will be : ${env.NODE_ENV}"
+
+                script {
+                      try {
+                            docker.build("digitalhouse-app:latest")
+                        }
+                      catch(e){
+                        echo "Caught: ${e}"
+                        currentBuild.result = 'FAILURE'
+                        error "Build stage failed"
+                      }
+                      finally{
+
+                      }
+                }
+            }
+
         }
 
-        stage('Example Build') {
-            steps {
-                echo 'Hello World'
-            }
-        }
-        stage('Deploy para a DEV') {
+        stage('Deploy') {
             when {
                 branch 'dev'
             }
             steps {
                 echo 'Deploy para Desenvolvimento'
             }
-        }
-
-        stage('Deploy para a Producao') {
             when {
                 branch 'prod'
             }
             steps {
                 echo 'Deploying para Producao'
-            }
+            }            
         }
+
     }
 }
