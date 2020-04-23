@@ -65,26 +65,13 @@ pipeline {
 
             steps {
                 echo 'Deploy para Desenvolvimento'
-
+                sh "docker run -d --name app1 -p 8030:3000 digitalhouse-devops:latest"
+                sh "docker ps"
             }
 
         }
 
-        stage('Deploy em Produção') {
-            agent {
-                label "producao"
-            }
 
-            when {
-
-                branch 'prod'
-            }
-
-            steps {
-                echo 'Deploy para Desenvolvimento'
-
-            }
-        }
 
 
 
