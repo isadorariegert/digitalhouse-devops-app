@@ -1,6 +1,6 @@
 pipeline {
 
-    agent { label 'master' }
+    agent none
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -12,11 +12,13 @@ pipeline {
     stages {
 
         stage('Clone repository') {
+            agent { label 'master' }
             steps {
                 checkout scm
             }
         }
-        stage('Build image'){          
+        stage('Build image'){   
+            agent { label 'master' }       
             steps {
                 script {
                     print "Environment will be : ${env.NODE_ENV}"
@@ -26,6 +28,7 @@ pipeline {
         }
 
         stage('Test image') {
+            agent { label 'master' }
             steps {
                 script {
 
@@ -41,6 +44,7 @@ pipeline {
         }
 
         stage('Docker push') {
+            agent { label 'master' }
             steps {
                 echo 'Push latest para AWS ECR'
                 script {
@@ -54,9 +58,7 @@ pipeline {
 
         stage('Deploy em Homologacao') {
 
-            agent {
-                label "dev"
-            }
+            agent { label 'dev' }
 
             when {
 
@@ -65,7 +67,8 @@ pipeline {
 
             steps {
                 echo 'Deploy para Desenvolvimento'
-                sh "docker run -d --name app1 -p 8030:3000 digitalhouse-devops:latest"
+                sh "docker run -d --name app1 nginx:latest"
+//                sh "docker run -d --name app1 -p 8030:3000 digitalhouse-devops:latest"
                 sh "docker ps"
             }
 
