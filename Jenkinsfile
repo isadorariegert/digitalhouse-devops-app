@@ -39,6 +39,15 @@ pipeline {
             }
         }
 
+        stage 'Docker push' {
+        
+            docker.withRegistry('933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops', 'ecr:us-east-1:awsdvops') {
+                docker.image('digitalhouse-app').push('latest')
+            }
+            
+        }
+
+
         stage('Deploy image') {
 
             steps {
@@ -48,6 +57,9 @@ pipeline {
 
             }
         }
+
+
+
 
     }
 }
