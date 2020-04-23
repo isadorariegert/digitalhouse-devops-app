@@ -1,14 +1,6 @@
 pipeline {
 
-    agent { label 'master' }
-
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '5'))
-    }
-    triggers {
-        cron('@daily')
-    }
-
+    agent any
     stages {
 
         stage('Clone repository') {
@@ -20,7 +12,18 @@ pipeline {
             steps {
                 script {
                     print "Environment will be : ${env.NODE_ENV}"
-                    app = docker.build("digitalhouse-app:${env.BUILD_ID}")
+                    
+                    try {
+                        app = docker.build("digitalhouse-app:${env.BUILD_ID}")
+                        }
+                    catch(e){
+                        echo "Caught: ${e}"
+                        currentBuild.result = 'FAILURE'
+                        error "Build stage failed"
+                    }
+                    finally{
+
+                    }
                 }
             }
         }
@@ -38,11 +41,14 @@ pipeline {
 
         stage('Deploy image') {
 
+            when {
+                branch 'prod'
+            }
             steps {
-                echo 'Tag latest da imagem depois do teste'
-                docker tag "digitalhouse-app:${env.BUILD_ID}" digitalhouse-app:latest
                 echo 'Deploy para Desenvolvimento'
-
+                script {
+                    app.push("latest")
+                }
             }
         }
 
