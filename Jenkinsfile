@@ -29,6 +29,8 @@ pipeline {
             steps {
                 script {
                     app.withRun('-p 8030:3000') { c ->
+                        sh 'ps axvf'
+                        sh 'netstat -nlp'
                         sh 'curl -s -w "%{http_code}\\\n" -o /dev/null http://127.0.0.1:3000/api/v1/healthcheck'
                         
                     }
