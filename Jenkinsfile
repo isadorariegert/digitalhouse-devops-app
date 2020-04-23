@@ -51,14 +51,30 @@ pipeline {
         }
 
 
-        stage('Deploy image') {
+        stage('Deploy em Homologacao') {
+            when {
+
+                branch 'dev'
+            }
+
+            steps {
+                echo 'Deploy para Desenvolvimento'
+
+            }
+
+        }
+
+        stage('Deploy em Produção') {
+            when {
+
+                branch 'prod'
+            }
 
             steps {
                 echo 'Deploy para Desenvolvimento'
 
             }
         }
-
 
 
 
