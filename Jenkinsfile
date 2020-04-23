@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     print "Environment will be : ${env.NODE_ENV}"
-                    app = docker.build("digitalhouse-app:${env.BUILD_ID}")
+                    docker.build("digitalhouse-app:${env.BUILD_ID}")
                 }
             }
         }
@@ -28,10 +28,11 @@ pipeline {
         stage('Test image') {
             steps {
                 script {
-                    app.withRun('-p 8030:3000') { c ->
+
+                    docker.image("digitalhouse-app:${env.BUILD_ID}").withRun('-p 8030:3000') { c ->
                         sh 'ps axvf'
                         sh 'netstat -nlp'
-                        sh 'curl -s -w "%{http_code}\\\n" -o /dev/null http://127.0.0.1:3000/api/v1/healthcheck'
+                        sh 'curl http://127.0.0.1:3000/api/v1/healthcheck'
                         
                     }
                
