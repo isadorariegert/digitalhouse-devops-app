@@ -44,7 +44,7 @@ pipeline {
                 echo 'Push latest para AWS ECR'
                 script {
                     docker.withRegistry('https://933273154934.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:awsdvops') {
-                        docker.image('digitalhouse-app').push('latest')
+                        docker.image('digitalhouse-app').push()
                     }
                 }
             }
