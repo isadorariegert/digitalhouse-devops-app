@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     print "Environment will be : ${env.NODE_ENV}"
-                    docker.build("digitalhouse-app:latest")
+                    docker.build("digitalhouse-devops:latest")
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
 
-                    docker.image("digitalhouse-app:latest").withRun('-p 8030:3000') { c ->
+                    docker.image("digitalhouse-devops:latest").withRun('-p 8030:3000') { c ->
                         sh 'docker ps'
                         sh 'curl http://127.0.0.1:8030/api/v1/healthcheck'
                         
@@ -44,7 +44,7 @@ pipeline {
                 echo 'Push latest para AWS ECR'
                 script {
                     docker.withRegistry('https://933273154934.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:awsdvops') {
-                        docker.image('digitalhouse-app').push()
+                        docker.image('digitalhouse-devops').push()
                     }
                 }
             }
