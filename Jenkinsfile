@@ -43,7 +43,6 @@ pipeline {
 
             steps {
                 echo 'Tag latest da imagem depois do teste'
-                docker.tag
                 sh "docker tag digitalhouse-app:${env.BUILD_ID} digitalhouse-app:latest"
                 echo 'Deploy para Desenvolvimento'
 
