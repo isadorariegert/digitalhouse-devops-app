@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     app.withRun('-p 8030:3000') { c ->
-                        sh 'curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8030/'
+                        sh 'curl -s -w "%{http_code}\\n" -o /dev/null http://127.0.0.1:8030/'
                     }
                
                 }
