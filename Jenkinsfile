@@ -53,6 +53,11 @@ pipeline {
 
 
         stage('Deploy em Homologacao') {
+
+            agent {
+                label "dev"
+            }
+
             when {
 
                 branch 'dev'
@@ -66,6 +71,10 @@ pipeline {
         }
 
         stage('Deploy em Produção') {
+            agent {
+                label "producao"
+            }
+
             when {
 
                 branch 'prod'
