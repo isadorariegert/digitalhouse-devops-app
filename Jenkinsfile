@@ -30,8 +30,7 @@ pipeline {
                 script {
 
                     docker.image("digitalhouse-app:${env.BUILD_ID}").withRun('-p 8030:3000') { c ->
-                        sh 'ps axvf'
-                        sh 'netstat -nlp'
+                        sh 'docker ps'
                         sh 'curl http://127.0.0.1:8083/api/v1/healthcheck'
                         
                     }
