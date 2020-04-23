@@ -41,6 +41,7 @@ pipeline {
 
         stage('Docker push') {
             steps {
+                echo 'Push latest para AWS ECR'
                 script {
                     docker.withRegistry('933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops', 'awsdvops') {
                         docker.image('digitalhouse-app').push('latest')
