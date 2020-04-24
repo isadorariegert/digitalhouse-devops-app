@@ -20,7 +20,12 @@ pipeline {
 
                 stage('Clone repository') {
                     steps {
-                        checkout scm
+                        script {
+                            if(env.BRANCH_NAME=='dev'){
+                                checkout scm
+                            }
+                            echo "My branch is: ${env.BRANCH_NAME}"
+                        }
                     }
                 }
                 stage('Build image'){       
