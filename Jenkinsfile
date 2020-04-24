@@ -85,7 +85,7 @@ pipeline {
                         sh "hostname"
                         sh "docker stop app1"
                         sh "docker rm app1"
-                        sh "docker run -d --name app1 -p 8030:3000 digitalhouse-devops:latest"
+                        sh "docker run -d --name app1 -p 8030:3000 933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops:latest"
                         sh "docker ps"
                         sh 'sleep 10'
                         sh 'curl http://127.0.0.1:8030/api/v1/healthcheck'
