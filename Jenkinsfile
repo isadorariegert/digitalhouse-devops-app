@@ -57,26 +57,21 @@ pipeline {
             }
         }
 
-        stage("CD") {
+        stage('Deploy em Homologacao') {
             agent { label 'dev' }
+            when {
 
-            stages {
-                stage('Deploy em Homologacao') {
-
-                    when {
-
-                        branch 'dev'
-                    }
-
-                    steps {
-                        echo 'Deploy para Desenvolvimento'
-                        sh "hostname"
-                        sh "docker run -d --name app1 nginx:latest"
-                        sh "docker ps"
-                    }
-
-                }
+                branch 'dev'
             }
+
+            steps {
+                echo 'Deploy para Desenvolvimento'
+                sh "hostname"
+                sh "docker run -d --name app1 nginx:latest"
+                sh "docker ps"
+            }
+
         }
+
     }
 }
