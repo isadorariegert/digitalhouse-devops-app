@@ -21,11 +21,11 @@ pipeline {
                 stage('Clone repository') {
                     steps {
                         script {
-                            if(env.BRANCH_NAME=='dev'){
+                            if(env.GIT_BRANCH=='origin/dev'){
                                 checkout scm
                             }
                             sh('printenv | sort')
-                            echo "My branch is: ${env.BRANCH_NAME}"
+                            echo "My branch is: ${env.GIT_BRANCH}"
                         }
                     }
                 }
@@ -75,7 +75,7 @@ pipeline {
 
             steps { 
                 script {
-                    if(env.BRANCH_NAME=='dev'){
+                    if(env.GIT_BRANCH=='origin/dev'){
 
                         echo 'Deploy para Desenvolvimento'
                         sh "hostname"
