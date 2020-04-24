@@ -10,7 +10,7 @@ pipeline {
     }
 
     stages{
-        stage("CI") {
+        stage("Build, Test and Push Docker Image") {
             agent {  
                 node {
                     label 'master'
@@ -66,7 +66,7 @@ pipeline {
             }
         }
 
-        stage('Deploy em Homologacao') {
+        stage('Deploy to DEV') {
             agent {  
                 node {
                     label 'dev'
@@ -76,11 +76,18 @@ pipeline {
             steps { 
                 script {
                     if(env.GIT_BRANCH=='origin/dev'){
+ 
+                        docker.withRegistry('https://933273154934.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:awsdvops') {
+                            docker.image('digitalhouse-devops').pull()
+                        }
 
                         echo 'Deploy para Desenvolvimento'
                         sh "hostname"
                         sh "docker run -d --name app1 nginx:latest"
                         sh "docker ps"
+                        sh 'sleep 10'
+                        sh 'curl http://127.0.0.1:8030/api/v1/healthcheck'
+
                     }
                 }
             }
