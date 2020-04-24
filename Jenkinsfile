@@ -24,6 +24,7 @@ pipeline {
                             if(env.BRANCH_NAME=='dev'){
                                 checkout scm
                             }
+                            sh('printenv | sort')
                             echo "My branch is: ${env.BRANCH_NAME}"
                         }
                     }
