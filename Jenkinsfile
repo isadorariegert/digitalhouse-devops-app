@@ -11,7 +11,11 @@ pipeline {
 
     stages{
         stage("CI") {
-
+            agent {  
+                node {
+                    label 'master'
+                }
+            }
             stages {
 
                 stage('Clone repository') {
