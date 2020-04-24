@@ -66,16 +66,15 @@ pipeline {
                     label 'dev'
                 }
             }
-            when {
-
-                branch 'dev'
-            }
 
             steps {
-                echo 'Deploy para Desenvolvimento'
-                sh "hostname"
-                sh "docker run -d --name app1 nginx:latest"
-                sh "docker ps"
+                if(env.BRANCH_NAME=='dev'){
+
+                    echo 'Deploy para Desenvolvimento'
+                    sh "hostname"
+                    sh "docker run -d --name app1 nginx:latest"
+                    sh "docker ps"
+                }
             }
 
         }
