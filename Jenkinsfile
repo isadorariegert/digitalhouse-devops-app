@@ -67,13 +67,15 @@ pipeline {
                 }
             }
 
-            steps {
-                if(env.BRANCH_NAME=='dev'){
+            steps { 
+                script {
+                    if(env.BRANCH_NAME=='dev'){
 
-                    echo 'Deploy para Desenvolvimento'
-                    sh "hostname"
-                    sh "docker run -d --name app1 nginx:latest"
-                    sh "docker ps"
+                        echo 'Deploy para Desenvolvimento'
+                        sh "hostname"
+                        sh "docker run -d --name app1 nginx:latest"
+                        sh "docker ps"
+                    }
                 }
             }
 
