@@ -7,12 +7,12 @@ pipeline {
         NODE_ENV=development
         AWS_ACCESS_KEY=""
         AWS_SECRET_ACCESS_KEY=""
-        AWS_SDK_LOAD_CONFIG=0
+        AWS_SDK_LOAD_CONFIG="0"
         BUCKET_NAME="app-digital"
         REGION="us-east-1" 
         PERMISSION=""
         ACCEPTED_FILE_FORMATS_ARRAY=""
-        VERSION=1.0.0
+        VERSION="1.0.0"
     }
 
 
@@ -126,12 +126,12 @@ pipeline {
                             NODE_ENV=production
                             AWS_ACCESS_KEY="123456"
                             AWS_SECRET_ACCESS_KEY="asdfghjkkll"
-                            AWS_SDK_LOAD_CONFIG=0
+                            AWS_SDK_LOAD_CONFIG="0"
                             BUCKET_NAME="app-digital"
                             REGION="us-east-1" 
                             PERMISSION=""
                             ACCEPTED_FILE_FORMATS_ARRAY=""
-                            VERSION=1.0.0
+                            VERSION="1.0.0"
                         }
 
 
