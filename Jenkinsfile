@@ -11,7 +11,6 @@ pipeline {
 
     stages{
         stage("CI") {
-            agent { label 'master' }
 
             stages {
 
@@ -58,7 +57,11 @@ pipeline {
         }
 
         stage('Deploy em Homologacao') {
-            agent { label 'dev' }
+            agent {  
+                node {
+                    label 'dev'
+                }
+            }
             when {
 
                 branch 'dev'
