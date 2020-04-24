@@ -4,7 +4,7 @@ pipeline {
 
     environment {
 
-        NODE_ENV=development
+        NODE_ENV="development"
         AWS_ACCESS_KEY=""
         AWS_SECRET_ACCESS_KEY=""
         AWS_SDK_LOAD_CONFIG="0"
@@ -123,7 +123,7 @@ pipeline {
  
                         environment {
 
-                            NODE_ENV=production
+                            NODE_ENV="production"
                             AWS_ACCESS_KEY="123456"
                             AWS_SECRET_ACCESS_KEY="asdfghjkkll"
                             AWS_SDK_LOAD_CONFIG="0"
@@ -131,7 +131,6 @@ pipeline {
                             REGION="us-east-1" 
                             PERMISSION=""
                             ACCEPTED_FILE_FORMATS_ARRAY=""
-                            VERSION="1.0.0"
                         }
 
 
