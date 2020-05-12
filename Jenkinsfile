@@ -4,15 +4,23 @@ pipeline {
 
     environment {
 
-        NODE_ENV="development"
-        AWS_ACCESS_KEY=""
-        AWS_SECRET_ACCESS_KEY=""
-        AWS_SDK_LOAD_CONFIG="0"
-        BUCKET_NAME="app-digital"
+        NODE_ENV="homolog"
+        
+        APP_PREFIX = "appnodejs"
+        APP_IMAGE = "${APP_PREFIX}:${BUILD_NUMBER}"
+        APP_CONTAINER = "${APP_PREFIX}-${BUILD_NUMBER}"
+        PORT_IMAGE='3000'
+        PORT_CONTAINER="8030"
+        REGISTRY_ADDRESS = "933273154934.dkr.ecr.us-east-1.amazonaws.com"
+
+        CREDENTIALID="awsdvops"
+        CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
+        BUCK_NAME="${APP_PREFIX}-${NODE_ENV}"
+        CREDENTIALID_S3="s3-${NODE_ENV}-${NODE_ENV}"
+        
         REGION="us-east-1" 
-        PERMISSION=""
-        ACCEPTED_FILE_FORMATS_ARRAY=""
-        VERSION="1.0.0"
+        IS_BUILD_VERSION="YES"
+        IS_NEW_VERSION="NO"
     }
 
 
@@ -24,30 +32,36 @@ pipeline {
     }
 
     stages{
+
+        
         stage("Build, Test and Push Docker Image") {
-            agent {  
-                node {
-                    label 'master'
-                }
+             
+            agent {
+                label 'master'
             }
+            when {
+                environment name: "IS_BUILD_VERSION", value: "YES"
+            }
+            
             stages {
 
                 stage('Clone repository') {
                     steps {
+                        git "https://github.com/agentelinux/digitalhouse-devops-app"
+                        
                         script {
-                            if(env.GIT_BRANCH=='origin/dev'){
-                                checkout scm
-                            }
-                            sh('printenv | sort')
-                            echo "My branch is: ${env.GIT_BRANCH}"
+                            SHORTCOMMIT = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+                            APP_IMAGE = "${APP_PREFIX}:${SHORTCOMMIT}"
                         }
+                        sh('printenv | sort')
                     }
                 }
                 stage('Build image'){       
                     steps {
+                        sh('printenv | sort')
                         script {
-                            print "Environment will be : ${env.NODE_ENV}"
-                            docker.build("digitalhouse-devops:latest")
+                            print "Environment will be : ${NODE_ENV}/${BUILD_ID}"
+                            docker.build("${APP_IMAGE}") 
                         }
                     }
                 }
@@ -56,10 +70,10 @@ pipeline {
                     steps {
                         script {
 
-                            docker.image("digitalhouse-devops:latest").withRun('-p 8030:3000') { c ->
+                            docker.image("${APP_IMAGE}").withRun("-p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME}") { c ->
                                 sh 'docker ps'
                                 sh 'sleep 10'
-                                sh 'curl http://127.0.0.1:8030/api/v1/healthcheck'
+                                sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
                                 
                             }
                     
@@ -71,8 +85,8 @@ pipeline {
                     steps {
                         echo 'Push latest para AWS ECR'
                         script {
-                            docker.withRegistry('https://933273154934.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:awsdvops') {
-                                docker.image('digitalhouse-devops').push()
+                            docker.withRegistry("https://${REGISTRY_ADDRESS}", "${CREDENTIAL_ECR}") {
+                                docker.image("${APP_IMAGE}").push("${SHORTCOMMIT}")
                             }
                         }
                     }
@@ -82,81 +96,101 @@ pipeline {
 
         stage('Deploy to Homolog') {
             agent {  
-                node {
-                    label 'dev'
-                }
+                label 'homolog'
             }
-
+            when {
+                environment name: "IS_BUILD_VERSION", value: "YES"
+            }
             steps { 
                 script {
-                    if(env.GIT_BRANCH=='origin/dev'){
- 
-                        docker.withRegistry('https://933273154934.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:awsdvops') {
-                            docker.image('digitalhouse-devops').pull()
+                    echo 'Deploy para Homologacao'
+
+                    docker.withRegistry("https://${REGISTRY_ADDRESS}", "${CREDENTIAL_ECR}") {
+                        docker.image("${APP_IMAGE}").pull()
+                    }
+
+                    withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
+                        , credentialsId: "${CREDENTIALID}"]]) {
+                        try {
+                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_IMAGE}"
+                        } 
+                        catch (Exception err) {
+                            sh "docker stop ${APP_PREFIX}"
+                            sh 'sleep 10'
+                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_IMAGE}"
                         }
 
-                        echo 'Deploy para Desenvolvimento'
-                        sh "hostname"
-                        sh "docker stop app1"
-                        sh "docker rm app1"
-                        //sh "docker run -d --name app1 -p 8030:3000 933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops:latest"
-                        withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
-                            , credentialsId: 'homologs3']]) {
-                        sh "docker run -d --name app1 -p 8030:3000 -e NODE_ENV=homolog -e AWS_ACCESS_KEY=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e BUCKET_NAME=nome-bucket-homolog-grupo 933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops:latest"
-                        }
-                        
-                        sh "docker ps"
-                        sh 'sleep 10'
-                        sh 'curl http://127.0.0.1:8030/api/v1/healthcheck'
+                    }
+                    
+                    sh "docker ps"
+                    sh 'sleep 10'
+                    sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
+                }
+            }
+            post{
+                failure {
+                    sh "docker stop ${APP_PREFIX}"
+                }
+            }
+        }
+        stage('Docker push latest') {
+            agent {
+                label 'master'
+            }
+            when {
+                environment name: "IS_BUILD_VERSION", value: "YES"
+            }
+            steps {
+                echo 'Push latest para AWS ECR'
+                script {
 
+                    sh "docker tag ${APP_IMAGE} ${APP_PREFIX}:latest"
+
+                    docker.withRegistry("https://${REGISTRY_ADDRESS}", "${CREDENTIAL_ECR}") {
+                        docker.image("${APP_PREFIX}").push("latest")
                     }
                 }
             }
-
         }
 
         stage('Deploy to Producao') {
             agent {  
-                node {
-                    label 'prod'
-                }
+                label 'prod'
+               
             }
-
+            when {
+                environment name: "IS_NEW_VERSION", value: "YES"
+            }
             steps { 
                 script {
-                    if(env.GIT_BRANCH=='origin/prod'){
- 
-                        environment {
 
-                            NODE_ENV="production"
-                            AWS_ACCESS_KEY="123456"
-                            AWS_SECRET_ACCESS_KEY="asdfghjkkll"
-                            AWS_SDK_LOAD_CONFIG="0"
-                            BUCKET_NAME="app-digital"
-                            REGION="us-east-1" 
-                            PERMISSION=""
-                            ACCEPTED_FILE_FORMATS_ARRAY=""
+                    NODE_ENV="production"
+                    CREDENTIALID="prods3"
+                    CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
+                    BUCK_NAME="${APP_PREFIX}-${NODE_ENV}"
+
+                    echo 'Deploy para Production'
+
+                    docker.withRegistry("https://${REGISTRY_ADDRESS}", "${CREDENTIAL_ECR}") {
+                        docker.image("${APP_PREFIX}").pull()
+                    }
+
+                    withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
+                        , credentialsId: "${CREDENTIALID}"]]) {
+                        try {
+                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
+                        } 
+                        catch (Exception err) {
+                            sh "docker stop ${APP_PREFIX}"
+                            sh 'sleep 10'
+                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
                         }
-
-
-                        docker.withRegistry('https://933273154934.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:awsdvops') {
-                            docker.image('digitalhouse-devops').pull()
-                        }
-
-                        echo 'Deploy para Producao'
-                        sh "hostname"
-                        sh "docker stop app1"
-                        sh "docker rm app1"
-                        //sh "docker run -d --name app1 -p 8030:3000 933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops:latest"
-                        withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
-                            , credentialsId: 'prods3']]) {
-                          sh "docker run -d --name app1 -p 8030:3000 -e NODE_ENV=producao -e AWS_ACCESS_KEY=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e BUCKET_NAME=nome-bucket-producao-grupo 933273154934.dkr.ecr.us-east-1.amazonaws.com/digitalhouse-devops:latest"
-                        }
-                        sh "docker ps"
-                        sh 'sleep 10'
-                        sh 'curl http://127.0.0.1:8030/api/v1/healthcheck'
 
                     }
+                    
+                    sh "docker ps"
+                    sh 'sleep 10'
+                    sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
                 }
             }
 
