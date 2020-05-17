@@ -69,14 +69,16 @@ pipeline {
                 stage('Test image') {
                     steps {
                         script {
+                            withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
+                                , credentialsId: "${CREDENTIALID_S3}"]]) {
 
-                            docker.image("${APP_IMAGE}").withRun("-p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME}") { c ->
-                                sh 'docker ps'
-                                sh 'sleep 10'
-                                sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
-                                
+                                docker.image("${APP_IMAGE}").withRun("-p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME}") { c ->
+                                    sh 'docker ps'
+                                    sh 'sleep 10'
+                                    sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
+                                    
+                                }
                             }
-                    
                         }
                     }
                 }
