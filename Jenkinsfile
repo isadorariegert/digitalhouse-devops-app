@@ -152,49 +152,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy to Producao') {
-            agent {  
-                label 'prod'
-               
-            }
-            when {
-                environment name: "IS_NEW_VERSION", value: "YES"
-            }
-            steps { 
-                script {
-
-                    NODE_ENV="production"
-                    CREDENTIALID="prods3"
-                    CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
-                    BUCK_NAME="${APP_PREFIX}-${NODE_ENV}"
-
-                    echo 'Deploy para Production'
-
-                    docker.withRegistry("https://${REGISTRY_ADDRESS}", "${CREDENTIAL_ECR}") {
-                        docker.image("${APP_PREFIX}").pull()
-                    }
-
-                    withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
-                        , credentialsId: "${CREDENTIALID}"]]) {
-                        try {
-                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
-                        } 
-                        catch (Exception err) {
-                            sh "docker stop ${APP_PREFIX}"
-                            sh 'sleep 10'
-                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
-                        }
-
-                    }
-                    
-                    sh "docker ps"
-                    sh 'sleep 10'
-                    sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
-                }
-            }
-
-        }
-
     }
 }
