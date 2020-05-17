@@ -68,7 +68,7 @@ pipeline {
                     }
 
                     withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
-                        , credentialsId: "${CREDENTIALID}"]]) {
+                        , credentialsId: "${CREDENTIALID_S3}"]]) {
                         try {
                             sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
                         } 
