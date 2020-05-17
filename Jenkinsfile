@@ -47,7 +47,7 @@ pipeline {
 
                 stage('Clone repository') {
                     steps {
-                        git "https://github.com/agentelinux/digitalhouse-devops-app"
+                        checkout scm
                         
                         script {
                             SHORTCOMMIT = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
