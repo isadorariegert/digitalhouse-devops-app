@@ -1,0 +1,92 @@
+pipeline {
+
+    agent none
+
+    parameters {
+        choice(choices: ['NAO', 'SIM, publicar em producao'], description: 'Publicar a versão LATEST da imagem do APP?', name: 'IS_PUBLIC_VERSION')
+    }
+
+
+    environment {
+
+        NODE_ENV="production"
+        
+        APP_PREFIX = "appnodejs"
+        APP_IMAGE = "${APP_PREFIX}:${BUILD_NUMBER}"
+        APP_CONTAINER = "${APP_PREFIX}-${BUILD_NUMBER}"
+        PORT_IMAGE='3000'
+        PORT_CONTAINER="8030"
+        REGISTRY_ADDRESS = "933273154934.dkr.ecr.us-east-1.amazonaws.com"
+
+        CREDENTIALID="prods3"
+        CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
+        BUCK_NAME="${APP_PREFIX}-${NODE_ENV}"
+        CREDENTIALID_S3="s3-${NODE_ENV}-${NODE_ENV}"
+        
+        REGION="us-east-1"
+    }
+
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+    triggers {
+        cron('@daily')
+    }
+
+    stages{
+
+        
+        stage("Gestão de mudança - GMUD") {
+             
+            agent {
+                label 'master'
+            }
+
+            steps {
+                script {
+                    print "Autorizado o deploy em produção? ${IS_PUBLIC_VERSION}"
+                }
+            }
+        }
+
+        stage('Deploy to Producao') {
+            agent {  
+                label 'prod'
+               
+            }
+            when {
+                environment name: "IS_PUBLIC_VERSION", value: "YES"
+            }
+            steps { 
+                script {
+
+                    echo 'Deploy para Production'
+
+                    docker.withRegistry("https://${REGISTRY_ADDRESS}", "${CREDENTIAL_ECR}") {
+                        docker.image("${APP_PREFIX}").pull()
+                    }
+
+                    withCredentials([[$class:'AmazonWebServicesCredentialsBinding' 
+                        , credentialsId: "${CREDENTIALID}"]]) {
+                        try {
+                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
+                        } 
+                        catch (Exception err) {
+                            sh "docker stop ${APP_PREFIX}"
+                            sh 'sleep 10'
+                            sh "docker run -d --rm --name ${APP_PREFIX} -p ${PORT_CONTAINER}:${PORT_IMAGE} -e NODE_ENV=${NODE_ENV} -e AWS_ACCESS_KEY=${env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} -e BUCKET_NAME=${BUCK_NAME} ${REGISTRY_ADDRESS}/${APP_PREFIX}:latest"
+                        }
+
+                    }
+                    
+                    sh "docker ps"
+                    sh 'sleep 10'
+                    sh "curl http://127.0.0.1:${PORT_CONTAINER}/api/v1/healthcheck"
+                }
+            }
+
+        }
+
+    }
+}
