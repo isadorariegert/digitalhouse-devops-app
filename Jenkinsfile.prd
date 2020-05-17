@@ -12,8 +12,7 @@ pipeline {
         NODE_ENV="production"
         
         APP_PREFIX = "appnodejs"
-        APP_IMAGE = "${APP_PREFIX}:${BUILD_NUMBER}"
-        APP_CONTAINER = "${APP_PREFIX}-${BUILD_NUMBER}"
+
         PORT_IMAGE='3000'
         PORT_CONTAINER="8030"
         REGISTRY_ADDRESS = "933273154934.dkr.ecr.us-east-1.amazonaws.com"
@@ -21,7 +20,7 @@ pipeline {
         CREDENTIALID="prods3"
         CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
         BUCK_NAME="${APP_PREFIX}-${NODE_ENV}"
-        CREDENTIALID_S3="s3-${NODE_ENV}-${NODE_ENV}"
+        CREDENTIALID_S3="credential-s3-${BUCK_NAME}"
         
         REGION="us-east-1"
     }

@@ -16,7 +16,7 @@ pipeline {
         CREDENTIALID="awsdvops"
         CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
         BUCK_NAME="${APP_PREFIX}-${NODE_ENV}"
-        CREDENTIALID_S3="s3-${NODE_ENV}-${NODE_ENV}"
+        CREDENTIALID_S3="credential-s3-${BUCK_NAME}"
         
         REGION="us-east-1" 
         IS_BUILD_VERSION="YES"
