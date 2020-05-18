@@ -40,9 +40,6 @@ pipeline {
             input {
                 message "Iniciar o deploy?"
                 ok "Yes"
-                parameters {
-                        choice(name: 'IS_PUBLIC_VERSION', choices: ['YES', 'NO'], description: 'Publicar a versão LATEST da imagem do APP?')
-                }
             }
             steps {
                 script {
