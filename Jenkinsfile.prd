@@ -38,11 +38,10 @@ pipeline {
                 label 'master'
             }
             input {
-                message "Iniciar o deploy para a produção?"
+                message "Iniciar o deploy?"
                 ok "Yes"
-                submitter "Aceite"
                 parameters {
-                    string(name: 'IS_PUBLIC_VERSION', defaultValue: 'NO', description: 'Publicar a versão LATEST da imagem do APP?')
+                        choice(name: 'IS_PUBLIC_VERSION', choices: ['YES', 'NO'], description: 'Publicar a versão LATEST da imagem do APP?')
                 }
             }
             steps {
