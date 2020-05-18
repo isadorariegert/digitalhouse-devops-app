@@ -22,12 +22,6 @@ pipeline {
         REGION="us-east-1"
     }
 
-    parameters {
-        choice(choices: ['NAO', 'SIM, publicar em producao'], description: 'Publicar a versão LATEST da imagem do APP?', name: 'IS_PUBLIC_VERSION')
-    }
-
-
-
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
     }
@@ -43,7 +37,14 @@ pipeline {
             agent {
                 label 'master'
             }
-
+            input {
+                message "Iniciar o deploy para a produção?"
+                ok "Yes"
+                submitter "Aceite"
+                parameters {
+                    string(name: 'IS_PUBLIC_VERSION', defaultValue: 'NO', description: 'Publicar a versão LATEST da imagem do APP?')
+                }
+            }
             steps {
                 script {
                     print "Autorizado o deploy em produção? ${IS_PUBLIC_VERSION}"
