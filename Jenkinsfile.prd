@@ -4,8 +4,6 @@ pipeline {
 
     environment {
 
-        IS_PUBLIC_VERSION="NO"
-
         NODE_ENV="production"
         
         APP_PREFIX = "appnodejs"
@@ -43,7 +41,6 @@ pipeline {
             }
             steps {
                 script {
-                    IS_PUBLIC_VERSION="YES"
                     print "Autorizado o deploy"
                 }
             }
@@ -53,9 +50,6 @@ pipeline {
             agent {  
                 label 'prod'
                
-            }
-            when {
-                environment name: "IS_PUBLIC_VERSION", value: "YES"
             }
             steps { 
                 script {
