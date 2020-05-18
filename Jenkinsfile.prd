@@ -2,11 +2,6 @@ pipeline {
 
     agent none
 
-    parameters {
-        choice(choices: ['NAO', 'SIM, publicar em producao'], description: 'Publicar a versão LATEST da imagem do APP?', name: 'IS_PUBLIC_VERSION')
-    }
-
-
     environment {
 
         IS_PUBLIC_VERSION="NO"
@@ -27,6 +22,11 @@ pipeline {
         REGION="us-east-1"
     }
 
+    parameters {
+        choice(choices: ['NAO', 'SIM, publicar em producao'], description: 'Publicar a versão LATEST da imagem do APP?', name: 'IS_PUBLIC_VERSION')
+    }
+
+
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -43,9 +43,7 @@ pipeline {
             agent {
                 label 'master'
             }
-            when {
-                environment name: "IS_PUBLIC_VERSION", value: "NO"
-            }
+
             steps {
                 script {
                     print "Autorizado o deploy em produção? ${IS_PUBLIC_VERSION}"
