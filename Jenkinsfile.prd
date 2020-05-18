@@ -40,12 +40,11 @@ pipeline {
             input {
                 message "Iniciar o deploy?"
                 ok "Yes"
-                id 'IS_PUBLIC'
             }
             steps {
                 script {
-                    IS_PUBLIC_VERSION="${IS_PUBLIC}"
-                    print "Autorizado o deploy em produção? ${IS_PUBLIC}, ${IS_PUBLIC_VERSION}"
+                    IS_PUBLIC_VERSION="YES"
+                    print "Autorizado o deploy"
                 }
             }
         }
