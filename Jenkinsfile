@@ -11,7 +11,7 @@ pipeline {
         APP_CONTAINER = "${APP_PREFIX}-${BUILD_NUMBER}"
         PORT_IMAGE='3000'
         PORT_CONTAINER="8030"
-        REGISTRY_ADDRESS = "933273154934.dkr.ecr.us-east-1.amazonaws.com"
+        REGISTRY_ADDRESS = "395989599229.dkr.ecr.us-east-1.amazonaws.com"
 
         CREDENTIALID="awsdvops"
         CREDENTIAL_ECR="ecr:us-east-1:${CREDENTIALID}"
